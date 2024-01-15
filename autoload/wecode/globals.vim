@@ -21,7 +21,7 @@ function! wecode#globals#Load()
   let g:wecode_node_binary = get(g:, 'wecode_node_binary', 'node')
 
   " The script of wecode agent.
-  let g:wecode_node_script = expand('<script>:h:h:h') . '/node_scripts/wecode-agent.js'
+  let g:wecode_node_script = expand('<script>:h:h:h') . '/node_scripts/tabby-agent.js'
 
 
   " Wecode use `getbufvar('%', '&filetype')` to get filetype of current buffer, and
