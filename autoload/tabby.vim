@@ -10,18 +10,18 @@ let s:message = ""
 
 function! tabby#Status()
   if s:status == "initializing"
-    echo 'Tabby is initializing.'
+    echo 'Wecode is initializing.'
   elseif s:status == "initialization_failed"
-    echo 'Tabby initialization failed.'
+    echo 'Wecode initialization failed.'
     echo s:message
   elseif s:status == "initialization_done"
     let agent_status = tabby#agent#Status()
     if agent_status == 'notInitialized'
-      echo 'Tabby is initializing.'
+      echo 'Wecode is initializing.'
     elseif agent_status == 'exited'
-      echo 'Tabby agent exited unexpectedly.'
+      echo 'Wecode agent exited unexpectedly.'
     elseif agent_status == 'ready'
-      echo 'Tabby is online.'
+      echo 'Wecode is online.'
       let agent_issues = tabby#agent#Issues()
       if len(agent_issues) > 0
         if agent_issues[0] == 'slowCompletionResponseTime'
@@ -36,7 +36,7 @@ function! tabby#Status()
         echo 'Automatic inline completion is enabled.'
       endif
     elseif agent_status == 'disconnected'
-      echo 'Tabby cannot connect to server. Please check your settings.'
+      echo 'Wecode cannot connect to server. Please check your settings.'
     elseif agent_status == 'unauthorized'
       echo 'Authorization required. Please set your personal token in settings.'
     endif
@@ -80,7 +80,7 @@ function! tabby#OnVimEnter()
 
   if !filereadable(g:tabby_node_script)
     let s:status = "initialization_failed"
-    let s:message = 'Tabby agent script not found. Please reinstall Tabby plugin.'
+    let s:message = 'Wecode agent script not found. Please reinstall Wecode plugin.'
     return
   endif
 
