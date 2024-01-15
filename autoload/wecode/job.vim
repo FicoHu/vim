@@ -1,17 +1,17 @@
 " Handles IO with child processes jobs
 
-if exists('g:autoloaded_tabby_job')
+if exists('g:autoloaded_wecode_job')
   finish
 endif
-let g:autoloaded_tabby_job = 1
+let g:autoloaded_wecode_job = 1
 
 let s:vim = exists('*job_start')
 let s:nvim = !s:vim && has('nvim') && exists('*jobstart')
 
-function! tabby#job#Check()
+function! wecode#job#Check()
   return #{
     \ ok: s:vim || s:nvim,
-    \ message: 'Tabby requires Vim 9.0+ with +job feature support, or NeoVim 0.6.0+.',
+    \ message: 'Wecode requires Vim 9.0+ with +job feature support, or NeoVim 0.6.0+.',
     \ }
 endfunction
 
@@ -20,7 +20,7 @@ let s:nvim_job_map = {}
 " Assume Json IO
 " Options 'out_cb', 'err_cb', 'exit_cb' supported
 " Return job id
-function! tabby#job#Start(command, ...)
+function! wecode#job#Start(command, ...)
   let options = get(a:, 1, {})
   if s:vim
     let opt = #{
@@ -61,7 +61,7 @@ function! tabby#job#Start(command, ...)
   endif
 endfunction
 
-function! tabby#job#Stop(job)
+function! wecode#job#Stop(job)
   if s:vim
     return job_stop(a:job)
   endif
@@ -76,7 +76,7 @@ endfunction
 
 " Align to Vim's ch_sendexpr
 " Options 'callback' supported
-function! tabby#job#Send(job, data, ...)
+function! wecode#job#Send(job, data, ...)
   let options = get(a:, 1, {})
   let id = s:NextRequestId()
   if s:vim

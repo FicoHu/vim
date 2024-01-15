@@ -1,67 +1,67 @@
 " Main functions
 
-if exists('g:autoloaded_tabby')
+if exists('g:autoloaded_wecode')
   finish
 endif
-let g:autoloaded_tabby = 1
+let g:autoloaded_wecode = 1
 
 let s:status = "initializing"
 let s:message = ""
 
-function! tabby#Status()
+function! wecode#Status()
   if s:status == "initializing"
-    echo 'Tabby is initializing.'
+    echo 'Wecode is initializing.'
   elseif s:status == "initialization_failed"
-    echo 'Tabby initialization failed.'
+    echo 'Wecode initialization failed.'
     echo s:message
   elseif s:status == "initialization_done"
-    let agent_status = tabby#agent#Status()
+    let agent_status = wecode#agent#Status()
     if agent_status == 'notInitialized'
-      echo 'Tabby is initializing.'
+      echo 'Wecode is initializing.'
     elseif agent_status == 'exited'
-      echo 'Tabby agent exited unexpectedly.'
+      echo 'Wecode agent exited unexpectedly.'
     elseif agent_status == 'ready'
-      echo 'Tabby is online.'
-      let agent_issues = tabby#agent#Issues()
+      echo 'Wecode is online.'
+      let agent_issues = wecode#agent#Issues()
       if len(agent_issues) > 0
         if agent_issues[0] == 'slowCompletionResponseTime'
           echo 'Completion requests appear to take too much time.'
         elseif agent_issues[0] == 'highCompletionTimeoutRate'
           echo 'Most completion requests timed out.'
         endif
-      elseif g:tabby_trigger_mode == 'manual'
-        echo 'You can use ' . g:tabby_keybinding_trigger_or_dismiss . 
+      elseif g:wecode_trigger_mode == 'manual'
+        echo 'You can use ' . g:wecode_keybinding_trigger_or_dismiss . 
           \ ' in insert mode to trigger completion manually.'
-      elseif g:tabby_trigger_mode == 'auto'
+      elseif g:wecode_trigger_mode == 'auto'
         echo 'Automatic inline completion is enabled.'
       endif
     elseif agent_status == 'disconnected'
-      echo 'Tabby cannot connect to server. Please check your settings.'
+      echo 'Wecode cannot connect to server. Please check your settings.'
     elseif agent_status == 'unauthorized'
       echo 'Authorization required. Please set your personal token in settings.'
     endif
   endif
 endfunction
 
-function! tabby#OnVimEnter()
-  call tabby#globals#Load()
+function! wecode#OnVimEnter()
+  call wecode#globals#Load()
 
-  let check_job = tabby#job#Check()
+  let check_job = wecode#job#Check()
   if !check_job.ok
     let s:status = "initialization_failed"
     let s:message = check_job.message
     return
   endif
 
-  let check_virtual_text = tabby#virtual_text#Check()
+  let check_virtual_text = wecode#virtual_text#Check()
   if !check_virtual_text.ok
     let s:status = "initialization_failed"
     let s:errmsg = check_virtual_text.message
     return
   endif
-  call tabby#virtual_text#Init()
+  call wecode#virtual_text#Init()
 
-  let node_binary = expand(g:tabby_node_binary)
+  let node_binary = expand(g:wecode_node_binary)
   if !executable(node_binary)
     let s:status = "initialization_failed"
     let s:message = 'Node.js binary not found. Please install Node.js version >= 18.0.'
@@ -78,60 +78,60 @@ function! tabby#OnVimEnter()
     return
   endif
 
-  if !filereadable(g:tabby_node_script)
+  if !filereadable(g:wecode_node_script)
     let s:status = "initialization_failed"
-    let s:message = 'Tabby agent script not found. Please reinstall Tabby plugin.'
+    let s:message = 'Wecode agent script not found. Please reinstall Wecode plugin.'
     return
   endif
 
-  let command = node_binary . ' --dns-result-order=ipv4first ' . g:tabby_node_script
-  call tabby#agent#Open(command)
+  let command = node_binary . ' --dns-result-order=ipv4first ' . g:wecode_node_script
+  call wecode#agent#Open(command)
 
-  call tabby#keybindings#Map()
+  call wecode#keybindings#Map()
 
   let s:status = "initialization_done"
 endfunction
 
-function! tabby#OnVimLeave()
-  call tabby#agent#Close()
+function! wecode#OnVimLeave()
+  call wecode#agent#Close()
 endfunction
 
-function! tabby#OnTextChanged()
+function! wecode#OnTextChanged()
   if s:status != "initialization_done"
     return
   endif
-  if g:tabby_trigger_mode == 'auto'
+  if g:wecode_trigger_mode == 'auto'
     " FIXME: Do not dismiss when type over the same as the completion text, or backspace in replace range.
-    call tabby#Dismiss()
-    call tabby#Trigger(v:false)
+    call wecode#Dismiss()
+    call wecode#Trigger(v:false)
   endif
 endfunction
 
-function! tabby#OnCursorMoved()
+function! wecode#OnCursorMoved()
   if s:current_completion_request == s:GetCompletionContext(v:false)
     return
   endif
-  call tabby#Dismiss()
+  call wecode#Dismiss()
   if s:ongoing_request_id != 0
-    call tabby#agent#CancelRequest(s:ongoing_request_id)
+    call wecode#agent#CancelRequest(s:ongoing_request_id)
   endif
 endfunction
 
-function! tabby#OnInsertLeave()
-  call tabby#Dismiss()
+function! wecode#OnInsertLeave()
+  call wecode#Dismiss()
   if s:ongoing_request_id != 0
-    call tabby#agent#CancelRequest(s:ongoing_request_id)
+    call wecode#agent#CancelRequest(s:ongoing_request_id)
   endif
 endfunction
 
-function! tabby#TriggerOrDismiss()
+function! wecode#TriggerOrDismiss()
   if s:status != "initialization_done"
     return ''
   endif
   if s:current_completion_response != {}
-    call tabby#Dismiss()
+    call wecode#Dismiss()
   else
-    call tabby#Trigger(v:true)
+    call wecode#Trigger(v:true)
   endif
   return ''
 endfunction
@@ -140,17 +140,17 @@ endfunction
 let s:current_completion_request = {}
 let s:ongoing_request_id = 0
 
-function! tabby#Trigger(is_manual)
+function! wecode#Trigger(is_manual)
   if s:status != "initialization_done"
     return
   endif
   if s:ongoing_request_id != 0
-    call tabby#agent#CancelRequest(s:ongoing_request_id)
+    call wecode#agent#CancelRequest(s:ongoing_request_id)
   endif
   let s:current_completion_request = s:GetCompletionContext(a:is_manual)
   let request = s:current_completion_request
   let OnResponse = { response -> s:HandleCompletionResponse(request, response) }
-  let s:ongoing_request_id = tabby#agent#ProvideCompletions(request, OnResponse)
+  let s:ongoing_request_id = wecode#agent#ProvideCompletions(request, OnResponse)
 endfunction
 
 " Store the completion response that is shown as inline completion.
@@ -165,16 +165,16 @@ function! s:HandleCompletionResponse(request, response)
     \ (type(a:response.choices) != v:t_list)
     return
   endif
-  call tabby#Dismiss()
+  call wecode#Dismiss()
   if (len(a:response.choices) == 0)
     return
   endif
   " Only support single choice completion for now
   let choice = a:response.choices[0]
-  call tabby#virtual_text#Render(s:current_completion_request, choice)
+  call wecode#virtual_text#Render(s:current_completion_request, choice)
   let s:current_completion_response = a:response
   
-  call tabby#agent#PostEvent(#{
+  call wecode#agent#PostEvent(#{
     \ type: "view",
     \ completion_id: a:response.id,
     \ choice_index: choice.index,
@@ -185,13 +185,13 @@ endfunction
 " the completion.
 let s:text_to_insert = ''
 
-function! tabby#ConsumeInsertion()
+function! wecode#ConsumeInsertion()
   let text = s:text_to_insert
   let s:text_to_insert = ''
   return text
 endfunction
 
-function! tabby#Accept(...)
+function! wecode#Accept(...)
   if s:current_completion_response == {}
     " keybindings fallback
     if a:0 < 1
@@ -211,7 +211,7 @@ function! tabby#Accept(...)
   let prefix_replace_chars = s:current_completion_request.position - choice.replaceRange.start 
   let suffix_replace_chars = choice.replaceRange.end - s:current_completion_request.position
   let s:text_to_insert = strcharpart(choice.text, prefix_replace_chars)
-  let insertion = repeat("\<Del>", suffix_replace_chars) . "\<C-R>\<C-O>=tabby#ConsumeInsertion()\<CR>"
+  let insertion = repeat("\<Del>", suffix_replace_chars) . "\<C-R>\<C-O>=wecode#ConsumeInsertion()\<CR>"
   
   if s:text_to_insert[-1:] == "\n"
     " Add a char and remove, workaround for insertion bug if ends with newline
@@ -219,9 +219,9 @@ function! tabby#Accept(...)
     let insertion .= "\<BS>"
   endif
   
-  call tabby#Dismiss()
+  call wecode#Dismiss()
   
-  call tabby#agent#PostEvent(#{
+  call wecode#agent#PostEvent(#{
     \ type: "select",
     \ completion_id: response.id,
     \ choice_index: choice.index,
@@ -230,9 +230,9 @@ function! tabby#Accept(...)
   return insertion
 endfunction
 
-function! tabby#Dismiss()
+function! wecode#Dismiss()
   let s:current_completion_response = {}
-  call tabby#virtual_text#Clear()
+  call wecode#virtual_text#Clear()
 endfunction
 
 function! s:GetCompletionContext(is_manual)
@@ -258,8 +258,8 @@ endfunction
 
 function! s:GetLanguage()
   let filetype = getbufvar('%', '&filetype')
-  if has_key(g:tabby_filetype_dict, filetype)
-    return g:tabby_filetype_dict[filetype]
+  if has_key(g:wecode_filetype_dict, filetype)
+    return g:wecode_filetype_dict[filetype]
   else
     return filetype
   endif

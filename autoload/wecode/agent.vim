@@ -1,47 +1,47 @@
 " Implementation of agent interface
 
-if exists('g:autoloaded_tabby_agent')
+if exists('g:autoloaded_wecode_agent')
   finish
 endif
-let g:autoloaded_tabby_agent = 1
+let g:autoloaded_wecode_agent = 1
 
-"   Stores the job of the current tabby agent node process
-let s:tabby = 0
+"   Stores the job of the current wecode agent node process
+let s:wecode = 0
 
-"   Stores the status of the tabby agent
-let s:tabby_status = 'notInitialized'
+"   Stores the status of the wecode agent
+let s:wecode_status = 'notInitialized'
 
 "   Stores the name of issues if any
-let s:tabby_issues = []
+let s:wecode_issues = []
 
-function! tabby#agent#Status()
-  return s:tabby_status
+function! wecode#agent#Status()
+  return s:wecode_status
 endfunction
 
-function! tabby#agent#Issues()
-  return s:tabby_issues
+function! wecode#agent#Issues()
+  return s:wecode_issues
 endfunction
 
-function! tabby#agent#Open(command)
-  if type(s:tabby) != v:t_number || s:tabby != 0
+function! wecode#agent#Open(command)
+  if type(s:wecode) != v:t_number || s:wecode != 0
     return
   endif
 
-  let s:tabby = tabby#job#Start(a:command, #{
+  let s:wecode = wecode#job#Start(a:command, #{
     \ out_cb: { _, data -> s:OnNotification(data) },
     \ err_cb: { _, data -> s:OnError(data) },
     \ exit_cb: { _ -> s:OnExit() },
     \ })
 
-  call tabby#agent#Initialize()
+  call wecode#agent#Initialize()
 endfunction
 
 function! s:OnNotification(data)
   if (type(a:data) == v:t_dict) && has_key(a:data, 'event')
     if  a:data.event == 'statusChanged'
-      let s:tabby_status = a:data.status
+      let s:wecode_status = a:data.status
     elseif a:data.event == 'issuesUpdated'
-      let s:tabby_issue = a:data.issues
+      let s:wecode_issue = a:data.issues
     endif
   endif
 endfunction
@@ -52,24 +52,24 @@ function! s:OnError(data)
 endfunction
 
 function! s:OnExit()
-  let s:tabby = {}
-  let s:tabby_status = 'exited'
+  let s:wecode = {}
+  let s:wecode_status = 'exited'
 endfunction
 
-function! tabby#agent#Close()
-  if type(s:tabby) == v:t_number && s:tabby == 0
+function! wecode#agent#Close()
+  if type(s:wecode) == v:t_number && s:wecode == 0
     return
   endif
-  call tabby#job#Stop(s:tabby)
-  let s:tabby = {}
-  let s:tabby_status = 'exited'
+  call wecode#job#Stop(s:wecode)
+  let s:wecode = {}
+  let s:wecode_status = 'exited'
 endfunction
 
-function! tabby#agent#Initialize()
-  if type(s:tabby) == v:t_number && s:tabby == 0
+function! wecode#agent#Initialize()
+  if type(s:wecode) == v:t_number && s:wecode == 0
     return
   endif
-  call tabby#job#Send(s:tabby, #{
+  call wecode#job#Send(s:wecode, #{
     \ func: 'initialize',
     \ args: [#{
       \ clientProperties: s:GetClientProperties(),
@@ -77,11 +77,11 @@ function! tabby#agent#Initialize()
     \ })
 endfunction
 
-function! tabby#agent#RequestAuthUrl(OnResponse)
-  if type(s:tabby) == v:t_number && s:tabby == 0
+function! wecode#agent#RequestAuthUrl(OnResponse)
+  if type(s:wecode) == v:t_number && s:wecode == 0
     return
   endif
-  call tabby#job#Send(s:tabby, #{
+  call wecode#job#Send(s:wecode, #{
     \ func: 'requestAuthUrl',
     \ args: [],
     \ }, #{
@@ -89,21 +89,21 @@ function! tabby#agent#RequestAuthUrl(OnResponse)
     \ })
 endfunction
 
-function! tabby#agent#WaitForAuthToken(code)
-  if type(s:tabby) == v:t_number && s:tabby == 0
+function! wecode#agent#WaitForAuthToken(code)
+  if type(s:wecode) == v:t_number && s:wecode == 0
     return
   endif
-  call tabby#job#Send(s:tabby, #{
+  call wecode#job#Send(s:wecode, #{
     \ func: 'waitForAuthToken',
     \ args: [a:code],
     \ })
 endfunction
 
-function! tabby#agent#ProvideCompletions(request, OnResponse)
-  if type(s:tabby) == v:t_number && s:tabby == 0
+function! wecode#agent#ProvideCompletions(request, OnResponse)
+  if type(s:wecode) == v:t_number && s:wecode == 0
     return
   endif
-  let requestId = tabby#job#Send(s:tabby, #{
+  let requestId = wecode#job#Send(s:wecode, #{
     \ func: 'provideCompletions',
     \ args: [a:request, { "signal": v:true }],
     \ }, #{
@@ -112,21 +112,21 @@ function! tabby#agent#ProvideCompletions(request, OnResponse)
   return requestId
 endfunction
 
-function! tabby#agent#CancelRequest(requestId)
-  if type(s:tabby) == v:t_number && s:tabby == 0
+function! wecode#agent#CancelRequest(requestId)
+  if type(s:wecode) == v:t_number && s:wecode == 0
     return
   endif
-  call tabby#job#Send(s:tabby, #{
+  call wecode#job#Send(s:wecode, #{
     \ func: 'cancelRequest',
     \ args: [a:requestId],
     \ })
 endfunction
 
-function! tabby#agent#PostEvent(event)
-  if type(s:tabby) == v:t_number && s:tabby == 0
+function! wecode#agent#PostEvent(event)
+  if type(s:wecode) == v:t_number && s:wecode == 0
     return
   endif
-  call tabby#job#Send(s:tabby, #{
+  call wecode#job#Send(s:wecode, #{
     \ func: 'postEvent',
     \ args: [a:event],
     \ })
@@ -139,7 +139,7 @@ function! s:GetClientProperties()
   return #{
     \ user: #{
       \ vim: #{
-        \ triggerMode: g:tabby_trigger_mode
+        \ triggerMode: g:wecode_trigger_mode
       \ }
     \ },
     \ session: #{
@@ -150,7 +150,7 @@ function! s:GetClientProperties()
       \ },
       \ tabby_plugin: #{
         \ name: 'TabbyML/vim-tabby',
-        \ version: g:tabby_version,
+        \ version: g:wecode_version,
       \ },
     \ }
   \ }

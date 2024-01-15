@@ -1,54 +1,54 @@
 " Handles virtual text (aka ghost text) for rendering inline completion
 
-if exists('g:autoloaded_tabby_virtual_text')
+if exists('g:autoloaded_wecode_virtual_text')
   finish
 endif
-let g:autoloaded_tabby_virtual_text = 1
+let g:autoloaded_wecode_virtual_text = 1
 
 let s:vim = exists('*prop_type_add')
 let s:nvim = !s:vim && has('nvim') && exists('*nvim_buf_set_extmark')
 
-function! tabby#virtual_text#Check()
+function! wecode#virtual_text#Check()
   return #{
     \ ok: s:vim || s:nvim,
-    \ message: 'Tabby requires Vim 9.0.0534+ with +textprop feature support, or NeoVim 0.6.0+.',
+    \ message: 'Wecode requires Vim 9.0.0534+ with +textprop feature support, or NeoVim 0.6.0+.',
     \ }
 endfunction
 
-function! tabby#virtual_text#Init()
-  hi def TabbyCompletion guifg=#808080 ctermfg=245
-  hi def TabbyCompletionReplaceRange guifg=#303030 ctermfg=236 guibg=#808080 ctermbg=245
+function! wecode#virtual_text#Init()
+  hi def WecodeCompletion guifg=#808080 ctermfg=245
+  hi def WecodeCompletionReplaceRange guifg=#303030 ctermfg=236 guibg=#808080 ctermbg=245
   if s:vim
-    let s:prop_type_completion = 'TabbyCompletion'
+    let s:prop_type_completion = 'WecodeCompletion'
     if prop_type_get(s:prop_type_completion) != {}
       call prop_type_delete(s:prop_type_completion)
     endif
     call prop_type_add(s:prop_type_completion, #{
-      \ highlight: 'TabbyCompletion',
+      \ highlight: 'WecodeCompletion',
       \ priority: 99,
       \ combine: 0,
       \ override: 1,
       \ })
 
-    let s:prop_type_replace = 'TabbyCompletionReplaceRange'
+    let s:prop_type_replace = 'WecodeCompletionReplaceRange'
     if prop_type_get(s:prop_type_replace) != {}
       call prop_type_delete(s:prop_type_replace)
     endif
     call prop_type_add(s:prop_type_replace, #{
-      \ highlight: 'TabbyCompletionReplaceRange',
+      \ highlight: 'WecodeCompletionReplaceRange',
       \ priority: 99,
       \ combine: 0,
       \ override: 1,
       \ })
   endif
   if s:nvim
-    let s:nvim_namespace = nvim_create_namespace('TabbyCompletion')
-    let s:nvim_highlight_completion = 'TabbyCompletion'
-    let s:nvim_highlight_replace = 'TabbyCompletionReplaceRange'
+    let s:nvim_namespace = nvim_create_namespace('WecodeCompletion')
+    let s:nvim_highlight_completion = 'WecodeCompletion'
+    let s:nvim_highlight_replace = 'WecodeCompletionReplaceRange'
   endif
 endfunction
 
-function! tabby#virtual_text#Render(request, choice)
+function! wecode#virtual_text#Render(request, choice)
   if (type(a:choice.text) != v:t_string) || (len(a:choice.text) == 0)
     return
   endif
@@ -180,7 +180,7 @@ function! s:MarkReplaceRange(replace_range)
   endif
 endfunction
 
-function! tabby#virtual_text#Clear()
+function! wecode#virtual_text#Clear()
   if s:vim
     call prop_remove(#{
       \ type: s:prop_type_completion,
