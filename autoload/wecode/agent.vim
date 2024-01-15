@@ -149,7 +149,7 @@ function! s:GetClientProperties()
         \ version: client,
       \ },
       \ tabby_plugin: #{
-        \ name: 'FicoHu/vim',
+        \ name: 'TabbyML/vim-tabby',
         \ version: g:wecode_version,
       \ },
     \ }
