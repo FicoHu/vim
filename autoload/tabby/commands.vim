@@ -1,59 +1,59 @@
-" Commands for Wecode
+" Commands for Tabby
 
-if exists('g:autoloaded_wecode_commands')
+if exists('g:autoloaded_tabby_commands')
   finish
 endif
-let g:autoloaded_wecode_commands = 1
+let g:autoloaded_tabby_commands = 1
 
 
-" See `*Wecode-commands*` section in `doc/wecode.txt` for more details.
+" See `*Tabby-commands*` section in `doc/tabby.txt` for more details.
 
 "   A dictionary contains all commands. Use name as key and function as value.
 let s:commands = {}
 
 function! s:commands.status(...)
-  call wecode#Status()
+  call tabby#Status()
 endfunction
 
 function! s:commands.version(...)
-  echo g:wecode_version
+  echo g:tabby_version
 endfunction
 
 function! s:commands.help(...)
   let args = get(a:, 1, [])
   if len(args) < 1
-    execute 'help Wecode'
+    execute 'help Tabby'
     return
   endif
   try
-    execute 'help Wecode-' . join(args, '-')
+    execute 'help Tabby-' . join(args, '-')
     return
   catch
   endtry
   try
-    execute 'help wecode_' . join(args, '_')
+    execute 'help tabby_' . join(args, '_')
     return
   catch
   endtry
-  execute 'help Wecode'
+  execute 'help Tabby'
 endfunction
 
-function! wecode#commands#Main(args)
+function! tabby#commands#Main(args)
   let args = split(a:args, ' ')
   if len(args) < 1
-    call wecode#Status()
-    echo 'Use `:help Wecode` to see available commands.'
+    call tabby#Status()
+    echo 'Use `:help Tabby` to see available commands.'
     return
   endif
   if has_key(s:commands, args[0])
     call s:commands[args[0]](args[1:])
   else
     echo 'Unknown command.'
-    echo 'Use `:help Wecode` to see available commands.'
+    echo 'Use `:help Tabby` to see available commands.'
   endif
 endfunction
 
-function! wecode#commands#Complete(arglead, cmd, pos)
+function! tabby#commands#Complete(arglead, cmd, pos)
   let words = split(a:cmd[0:a:pos].'#', ' ')
   if len(words) > 3
     return []
