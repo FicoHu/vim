@@ -148,7 +148,7 @@ function! s:GetClientProperties()
         \ name: name,
         \ version: client,
       \ },
-      \ wecode_plugin: #{
+      \ tabby_plugin: #{
         \ name: 'FicoHu/vim',
         \ version: g:wecode_version,
       \ },
